@@ -22,13 +22,13 @@ server_status_e bind_tcp_port(tcp_server *server, int port) {
     server->address.sin_addr.s_addr = INADDR_ANY;
     server->address.sin_port = htons(port);
 
-    if (bind(server->socket_fd, (struct sockaddr*)&server->address, sizeof(server->address)) == -1) {
+    if (bind(server->socket_fd, (struct sockaddr*)&server->address, sizeof(server->address)) < 0) {
         perror("bind");
         close(server->socket_fd);
         return SERVER_BIND_ERROR;
     }
 
-    if (listen(server->socket_fd, MAX_CONNECTIONS) == -1) {
+    if (listen(server->socket_fd, MAX_CONNECTIONS) < 0) {
         perror("listen");
         close(server->socket_fd);
         return SERVER_LISTEN_ERROR;
@@ -44,7 +44,7 @@ int accept_client(int server_fd) {
     socklen_t client_len = sizeof(client_addr_in);
 
     int client_fd = accept(server_fd, (struct sockaddr*)&client_addr_in, &client_len);
-    if (client_fd == -1) {
+    if (client_fd < 0) {
         perror("accept");
         return -1;
     }
