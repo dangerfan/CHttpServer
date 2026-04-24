@@ -25,7 +25,7 @@ server_status_e bind_tcp_port(tcp_server *server, int port) {
     if (bind(server->socket_fd, (struct sockaddr*)&server->address, sizeof(server->address)) == -1) {
         perror("bind");
         close(server->socket_fd);
-        return SERVER_BIND_ERROR;
+        return -1;
     }
 
     if (listen(server->socket_fd, MAX_CONNECTIONS) == -1) {
