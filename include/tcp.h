@@ -7,12 +7,11 @@
 #define MAX_CONNECTIONS 8
 
 typedef enum {
-    SERVER_ACCEPT_ERROR,
+    SERVER_OK,
+    SERVER_SOCKET_ERROR,
     SERVER_BIND_ERROR,
     SERVER_LISTEN_ERROR,
-    SERVER_OK,
-    SERVER_OPTIONS_ERROR,
-    SERVER_SOCKET_ERROR
+    SERVER_ACCEPT_ERROR
 } server_status_e;
 
 typedef struct {

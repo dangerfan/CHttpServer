@@ -6,6 +6,10 @@
 #include "tcp.h"
 
 server_status_e bind_tcp_port(tcp_server *server, int port) {
+    if (port && port > 9999) {
+        return -1;
+    }
+
     int opt = 1;                            // for setting the socket options
 
     memset(server, 0, sizeof(*server));
@@ -20,7 +24,7 @@ server_status_e bind_tcp_port(tcp_server *server, int port) {
     if (setsockopt(server->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
         perror("setsockopt");
         close(server->socket_fd);
-        return SERVER_OPTIONS_ERROR;
+        return -1;
     }
 
     server->address.sin_family = AF_INET;
