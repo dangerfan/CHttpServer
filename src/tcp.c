@@ -10,21 +10,12 @@ server_status_e bind_tcp_port(tcp_server *server, int port) {
         return -1;
     }
 
-    int opt = 1;                            // for setting the socket options
-
     memset(server, 0, sizeof(*server));
     
     if ((server->socket_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         perror("socket");
         printf("Could not create socket\n");
         return SERVER_SOCKET_ERROR;
-    }
-
-    // set some options on the socket
-    if (setsockopt(server->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
-        perror("setsockopt");
-        close(server->socket_fd);
-        return -1;
     }
 
     server->address.sin_family = AF_INET;
