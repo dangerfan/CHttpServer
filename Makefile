@@ -1,17 +1,28 @@
-TARGET = bin/server
-SRC = $(wildcard src/*.c)
-OBJ = $(patsubst src/%.c, obj/%.o, $(SRC))
+CC = gcc
+CFLAGS = -Wall -Wextra -Iinclude -g
 
-run: clean default
+SRC_DIR = src
+OBJ_DIR = obj
+BIN_DIR = bin
 
-default: $(TARGET)
+TARGET = $(BIN_DIR)/myhttpd
+
+SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
+OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_FILES))
+
+all: $(TARGET)
+
+$(TARGET): $(OBJ_FILES) | $(BIN_DIR)
+	$(CC) $(CFLAGS) -o $@ $?
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
+
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
 
 clean:
-	rm -f obj/*.o
-	rm -f bin/*
-
-$(TARGET): $(OBJ)
-	gcc -o $@ $?
-
-obj/%.o : src/%.c
-	gcc -c $< -o $@ -Iinclude -Wall -Wextra -g
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
