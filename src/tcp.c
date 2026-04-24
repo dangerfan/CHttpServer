@@ -6,7 +6,7 @@
 #include "tcp.h"
 
 server_status_e bind_tcp_port(tcp_server *server, int port) {
-    if (port && port > 11000) {
+    if (port && port > 65535) {
         return -1;
     }
 
