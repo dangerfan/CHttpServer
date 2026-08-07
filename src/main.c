@@ -12,7 +12,6 @@ int main() {
     tcp_server server = {0};
     http_request request = {0};
 
-    
     if (bind_tcp_port(&server, port) != SERVER_OK) {
         printf("Failed to set up server\n");
         return 0;

@@ -11,7 +11,6 @@
 #define HTTP_MAX_HEADER_VAL_LEN 256
 #define HTTP_MAX_REASON_LEN 64
 
-
 typedef enum {
     HTTP_PARSE_INVALID,
     HTTP_PARSE_OK
