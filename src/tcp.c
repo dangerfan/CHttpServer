@@ -6,7 +6,10 @@
 #include "tcp.h"
 
 server_status_e bind_tcp_port(tcp_server *server, int port) {
+    int opt = 1;
+    
     if (port < 0 || port > 65535) {
+        printf("Invalid port number: %d\n", port);
         return -1;
     }
 
@@ -14,13 +17,18 @@ server_status_e bind_tcp_port(tcp_server *server, int port) {
     
     if ((server->socket_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         perror("socket");
-        printf("Could not create socket\n");
+        return SERVER_SOCKET_ERROR;
+    }
+
+    if (setsockopt(server->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
+        perror("setsockopt");
+        close(server->socket_fd);
         return SERVER_SOCKET_ERROR;
     }
 
     server->address.sin_family = AF_INET;
     server->address.sin_addr.s_addr = INADDR_ANY;
-    server->address.sin_port = htons(port);
+    server->address.sin_port = htons((uint16_t)port);
 
     if (bind(server->socket_fd, (struct sockaddr*)&server->address, sizeof(server->address)) < 0) {
         perror("bind");

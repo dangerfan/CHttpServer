@@ -10,7 +10,7 @@ TARGET = $(BIN_DIR)/myhttpd
 SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
 OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_FILES))
 
-all: $(TARGET)
+all: clean $(TARGET)
 
 $(TARGET): $(OBJ_FILES) | $(BIN_DIR)
 	$(CC) $(CFLAGS) -o $@ $?
