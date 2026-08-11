@@ -37,8 +37,24 @@ typedef struct {
     char buffer[HTTP_MAX_REQUEST_LEN];
 } http_request;
 
+typedef struct {
+    int status_code;
+    char reason_phrase[64];
+    http_header_t *headers;
+    size_t header_count;
+    char *body;
+    size_t body_length;
+} http_response;
+
 http_parse_e read_http_request(int socket_fd, http_request *request);
 http_parse_e parse_http_headers(const char *raw_request, http_request *request);
 void free_http_headers(http_request *request);
+void init_http_response(http_response *response);
+void add_http_header(http_response *response, const char *key, const char *value);
+void free_http_response(http_response *response);
+char *construct_http_response(const http_response *response, size_t *response_length);
+void send_http_response(int client_fd, const http_response *response);
+void sanitize_path(const char *requested_path, char *sanitized_path, size_t buffer_size);
+void serve_file(const char *path, http_response *response);
 
 #endif

@@ -4,6 +4,7 @@ CFLAGS = -Wall -Wextra -Iinclude -g
 SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
+TEST_BIN_DIR = tests/bin
 
 TARGET = $(BIN_DIR)/myhttpd
 
@@ -25,4 +26,4 @@ $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
 clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	rm -rf $(OBJ_DIR) $(BIN_DIR) $(TEST_BIN_DIR)
