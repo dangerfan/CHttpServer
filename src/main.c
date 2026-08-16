@@ -3,8 +3,21 @@
 #include <unistd.h>
 
 #include "http.h"
+#include "route.h"
 #include "tcp.h"
 
+void hello_handler(http_request *req, http_response *res) {
+    res->status_code = 200;
+  
+    if (!res->body) {
+      res->body = malloc(64);
+    }
+
+    strcpy(res->body, "Hello, World!\n");
+    res->body_length = 14;
+
+    add_http_header(res, "Content-Length", "14");
+}
 
 int main() {
 
@@ -16,12 +29,15 @@ int main() {
         return 0;
     }
 
+    install_route(HTTP_METHOD_GET, "/hello", hello_handler);
+    
     for (;;) {
         int client_fd = accept_client(server.socket_fd);
         if (client_fd == -1) {
             printf("Failed to accept client connection\n");
             exit(EXIT_FAILURE);
         }
+        printf("Client FD: %d\n", client_fd);
 
         printf("Client connected\n");
 
@@ -44,7 +60,9 @@ int main() {
 
         char sanitized_path[1024] = {0};
         sanitize_path(request.path, sanitized_path, sizeof(sanitized_path));
-        serve_file(sanitized_path, &response);
+
+        if (!handle_request(&request, &response))
+            serve_file(sanitized_path, &response);
 
         send_http_response(client_fd, &response);
         printf("send_http_response complete\n");

@@ -1,10 +1,29 @@
 #include "http.h"
+#include "route.h"
+
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+
+extern Route routes[];
+extern int route_count;
+
+bool handle_request(http_request *request, http_response *response) {
+    for (int i = 0; i < route_count; i++) {
+        printf("Route path: %s\n", request->path);
+        if (strcmp(routes[i].path, request->path) == 0 && routes[i].method == request->method_e) {
+            routes[i].handler(request, response);
+            return true;
+        }
+    }
+
+    printf("handle_request returning false\n");
+    return false;
+}
 
 void sanitize_path(const char *requested_path, char *sanitized_path, size_t buffer_size) {
     const char *web_root = "./www";
@@ -16,7 +35,7 @@ void sanitize_path(const char *requested_path, char *sanitized_path, size_t buff
 }
 
 void serve_file(const char *path, http_response *response) {
-    FILE *file = fopen(path, "rb+");
+    FILE *file = fopen(path, "rb");
 
     if (!file) {
         response->status_code = 404;
@@ -40,7 +59,10 @@ void serve_file(const char *path, http_response *response) {
     fclose(file);
     file_content[file_size] = '\0';
 
-    response->body = file_content;
+    char *copied = malloc(file_size + 1);
+    strcpy(copied, file_content);
+
+    response->body = copied;
     response->body_length = file_size;
     printf("File size: %zu\n", file_size);
 
@@ -53,6 +75,8 @@ void serve_file(const char *path, http_response *response) {
         add_http_header(response, "Content-Type", "application/javascript");
     } else if (strstr(path, ".png")) {
         add_http_header(response, "Content-Type", "image/png");
+    } else if (strstr(path, ".ico")) {
+        add_http_header(response, "Content-Type", "image/x-icon");
     } else {
         add_http_header(response, "Content-Type", "application/octet-stream");
     }
@@ -81,6 +105,12 @@ http_parse_e read_http_request(int socket_fd, http_request *request) {
     if (input_count != 3) {
         printf("scan did not equal 3, value was %d \n", input_count);
         return HTTP_PARSE_INVALID;
+    }
+
+    if (strcmp(request->method, "GET") == 0) {
+        request->method_e = HTTP_METHOD_GET;
+    } else if (strcmp(request->method, "POST") == 0) {
+        request->method_e = HTTP_METHOD_POST;
     }
 
     return HTTP_PARSE_OK;
@@ -164,7 +194,7 @@ void free_http_response(http_response *response) {
 }
 
 char *construct_http_response(const http_response *response, size_t *response_length) {
-    size_t buffer_size = 1024;
+    size_t buffer_size = 2048;
     char *buffer = malloc(buffer_size);
     if (!buffer) {
         perror("Failed to allocate memory for response buffer");
@@ -208,7 +238,7 @@ char *construct_http_response(const http_response *response, size_t *response_le
 void send_http_response(int client_fd, const http_response *response) {
     size_t response_length = 0;
     char *response_data = construct_http_response(response, &response_length);
-    //printf("%s \n", response_data);
+    printf("%s \n", response_data);
 
     size_t total_sent = 0;
     while (total_sent < response_length) {
