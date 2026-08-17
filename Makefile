@@ -5,6 +5,9 @@ SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
 TEST_BIN_DIR = tests/bin
+LD_FLAGS=-l:libcjson.a -L ./lib
+
+
 
 TARGET = $(BIN_DIR)/myhttpd
 
@@ -14,7 +17,7 @@ OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_FILES))
 all: clean $(TARGET)
 
 $(TARGET): $(OBJ_FILES) | $(BIN_DIR)
-	$(CC) $(CFLAGS) -o $@ $?
+	$(CC) $(CFLAGS) -o $@ $? $(LD_FLAGS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@

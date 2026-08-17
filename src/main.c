@@ -1,10 +1,83 @@
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+
+#include <cjson/cJSON.h>
 
 #include "http.h"
 #include "route.h"
 #include "tcp.h"
+
+typedef struct {
+    int port;
+} server_config;
+
+
+char *loadfile(const char *file_name) {
+    FILE *file = fopen(file_name, "r+");
+    fseek(file, 0 , SEEK_END);
+    size_t file_size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char *file_content = malloc(file_size + 1);
+    if (!file_content) {
+        perror("Failed to allocate memory for file");
+        fclose(file);
+        exit(EXIT_FAILURE);
+    }
+
+    fread(file_content, 1, file_size, file);
+    fclose(file);
+    file_content[file_size] = '\0';
+
+    char *copied = malloc(file_size + 1);
+    strcpy(copied, file_content);
+
+    free(file_content);
+    return copied;
+}
+
+int loadConfig(server_config *config) {
+    int status = 0;
+
+    char* configdata = loadfile("config.json");
+    if (!configdata) {
+      printf("Could not load config file\n");
+      goto end;
+    }
+
+    cJSON *config_json = cJSON_Parse(configdata);
+    if (config_json == NULL) {
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL)
+        {
+            fprintf(stderr, "Error before: %s\n", error_ptr);
+        }
+        status = 0;
+        goto end;
+    }
+
+    cJSON *port = cJSON_GetObjectItemCaseSensitive(config_json, "portnumber");
+    if (!cJSON_IsNumber(port)) {
+        status = 0;
+        goto end;
+    }
+
+    
+    if (port->valueint > 65535 || port->valueint < 0) {
+        printf("Invalid port number specified in config.\n");
+        status = 0;
+        goto end;
+    }
+
+    config->port = (short)port->valueint;
+    status = 1;
+    end:
+      cJSON_Delete(config_json);
+      return status;
+}
 
 void hello_handler(http_request *req, http_response *res) {
     res->status_code = 200;
@@ -21,10 +94,18 @@ void hello_handler(http_request *req, http_response *res) {
 
 int main() {
 
-    int port = 8080;
     tcp_server server = {0};
+
+    server_config config = {
+      .port = 8080,
+    };
+
+    if (loadConfig(&config) == 0) {
+      printf("failed to load config, using default values.\n");
+    }
+
     
-    if (bind_tcp_port(&server, port) != SERVER_OK) {
+    if (bind_tcp_port(&server, config.port) != SERVER_OK) {
         printf("Failed to set up server\n");
         return 0;
     }
