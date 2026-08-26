@@ -15,7 +15,7 @@ extern int route_count;
 bool handle_request(http_request *request, http_response *response) {
     for (int i = 0; i < route_count; i++) {
         printf("Route path: %s\n", request->path);
-        if (strcmp(routes[i].path, request->path) == 0 && routes[i].method == request->method_e) {
+        if (strcmp(routes[i].path, request->path) == 0 && routes[i].method == request->methode) {
             routes[i].handler(request, response);
             return true;
         }
@@ -108,9 +108,9 @@ http_parse_e read_http_request(int socket_fd, http_request *request) {
     }
 
     if (strcmp(request->method, "GET") == 0) {
-        request->method_e = HTTP_METHOD_GET;
+        request->methode = HTTP_METHOD_GET;
     } else if (strcmp(request->method, "POST") == 0) {
-        request->method_e = HTTP_METHOD_POST;
+        request->methode = HTTP_METHOD_POST;
     }
 
     return HTTP_PARSE_OK;

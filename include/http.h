@@ -36,7 +36,7 @@ typedef struct {
     http_header_t *headers;
     size_t header_count;
     char buffer[HTTP_MAX_REQUEST_LEN];
-    http_method_e method_e;
+    http_method_e methode;
 } http_request;
 
 typedef struct {
